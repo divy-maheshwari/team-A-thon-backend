@@ -3,17 +3,6 @@ const router = express.Router();
 const isAuth = require("../config/jwt").isAuth;
 const ClassRoom = require("../models/classModel");
 
-// all details of one classroom
-// router.get('/',(req,res) => {
-//     Product.find({},(err,products) => {
-//         if(products) {
-//             res.json(products);
-//         }
-//         else {
-//             res.json([]);
-//         }
-//     });
-// });
 
 router.get("/:id", (req, res) => {
   console.log(req.params);
@@ -41,19 +30,20 @@ router.post("/new", (req, res) => {
   })
 });
 
-router.patch("/:id/announcement", (req, res) => {
-  ClassRoom.findById(req.params.id,(err,classRoom) => {
-      const announcement = {
-        author: classRoom.teacherId,
-        text: req.body.text,
-        updated: Date.now()
-      };
-      classRoom.announcements.push(announcement);
-      classRoom.save().then((classRoom) => {
-        res.json(classRoom);
-      });
+router.patch("/:id/announcement", async (req, res) => {
+  const classRoom = await ClassRoom.findOne({classRoomId:req.params.id})
+  .catch((err)=>console.log(err));
+  if(classRoom){
+    const announcement = {
+      author: classRoom.teacherId,
+      text: req.body.text
+    };
+    classRoom.announcements.push({announcement});
+    await classRoom.save().catch((e)=>console.log(e))
     }
-  );
+    console.log(classRoom.announcements)
+    res.json(classRoom);
+   
 });
 
 router.patch("/:id/assignment", (req, res) => {
@@ -98,19 +88,3 @@ router.delete("/:id", isAuth, (req, res) => {
 
 module.exports = router;
 
-// router.post('/upload',(req,res) => {
-//     if(req.files) {
-//         const file = req.files.image;
-//         file.mv(`C:/Users/divy maheshwari/MernProjects/Restaurant/client/public/uploads/${file.name}`,err => {
-//             if(err) {
-//                return res.status(500).json(err);
-//             }
-//             res.json(file.name);
-//         });
-//     }
-//     else {
-//         return res.status(500).json({msg:'no file uploaded'});
-//     }
-// });
-// gaand phate to phate nawaabi na ghate
-// upload karenge bsdk
